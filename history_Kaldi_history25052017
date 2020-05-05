@@ -1,0 +1,395 @@
+    1  sudo su
+       cd /home/suraj/kaldi/
+    5  cd /home/suraj/kaldi/egs/
+    6  mkdir Marathi_workspace
+    7  chmod -R 777 Marathi_workspace/
+    9  cd Marathi_workspace/
+   11  
+   12  mkdir wav data exp_EG mfcc
+   13  chmod -R 777 wav data
+   14  
+   15  cd wav/
+   16  mkdir train test
+   17  
+   19  cd data/
+   20  mkdir train test
+
+   21  cd ..
+   23  chmod -R 777 *
+   24  base_path='/home/suraj/kaldi/egs/Marathi_workspace' 
+
+   25  cat $base_path/data/train/train_wav.txt | cut -c 73-81 | sort -u |head
+   30  cat $base_path/data/train/train_wav.txt | cut -c 73-81 | sort -u | wc -l
+   31  cat $base_path/data/train/train_wav.txt | cut -c 73-81 | sort | uniq | wc -l
+   32  cat $base_path/data/train/train_wav.txt | cut -c 73-81 | sort | uniq > $base_path/folder_struct_train
+
+   33  ls
+   34  cat $base_path/data/test/test_wav.txt | cut -c 73-81 | sort | uniq > $base_path/folder_struct_test
+
+   36  cat folder_struct_train | head
+   37  cat folder_struct_test | head
+
+   38  cd wav/train/
+   39  while read line; do echo "$line"; mkdir -p $line; done < $base_path/folder_struct_train
+   40  ls
+
+   41  cd ..
+   42  cd test/
+   43  while read line; do echo "$line"; mkdir -p $line; done < $base_path/folder_struct_test
+
+   44  cd ..
+   45  chmod -R 777 *
+  145  cd wav/train/
+  146  ls
+
+  147  cd ../../data/train/
+  148  ls
+  158  cat train_wav.txt | sed 's/Marathi_Sentence_Dataset_A/train/g' | head
+  159  cat train_wav.txt | sed 's/Marathi_Sentence_Dataset_A/train/g' > $base_path/data/train/train_wav_dest.txt
+
+  160  cd ../test/
+  163  cat test_wav.txt | sed 's/Marathi_Sentence_Dataset_A/test/g' > $base_path/data/test/test_wav_dest.txt
+  164  paste test_wav.txt test_wav_dest.txt > test.txt
+
+  165  cd ../train/
+  166  paste train_wav.txt train_wav_dest.txt > train.txt
+  170  cat train.txt | sed 's/\.wav/\.trans/g' | head
+  171  cat train.txt | sed 's/\.wav/\.trans/g' > train_trans.txt
+ 
+  172  cd ../test/
+  173  cat test.txt | sed 's/\.wav/\.trans/g'|head
+  174  cat test.txt | sed 's/\.wav/\.trans/g' > test_trans.txt
+ 
+
+  176  clear
+  177  cd ../train/
+  179  while read line1 line2;  do  ../../RemoveEndSilence $line1 temp 44 ;  sox -t raw -b 16 -e signed-integer -r 8000 -c 1 temp $line2;  done < train.txt
+
+  180  cd ../test/
+  182  while read line1 line2;  do  ../../RemoveEndSilence $line1 temp 44 ;  sox -t raw -b 16 -e signed-integer -r 8000 -c 1 temp $line2 # 16 bit mono 8000 sampling rate;    done < test.txt
+  188  chmod 777 copy_trans_files.sh
+  189  ./copy_trans_files.sh 
+
+  190  cd ../test/
+  191  chmod 777 copy_test_trans.sh
+  192  ./copy_test_trans.sh 
+  193  ls */*/*/*.wav | wc
+
+  194  cd ../../
+  195  cd wav/train/
+  196  ls */*/*/*.wav | wc
+
+  197  cd ../test/
+  198  ls */*/*/*.wav | wc
+
+  199  cd ../../data/train/
+  205  cat train_wav_dest.txt |cut -d '/' -f12 | cut -d '.' -f1 |head 
+  208  cat train_wav_dest.txt |cut -c 61-78 > train_utt.txt
+  212  paste train_utt.txt train_wav_dest.txt >wav.scp
+
+  214  cd ../test/
+  217  cat test_wav_dest.txt |cut -c 61-77 | head 
+  218  cat test_wav_dest.txt |cut -c 61-77 > test_utt.txt
+  219  paste test_utt.txt test_wav_dest.txt >wav.scp
+  220  cat test_wav_dest.txt |cut -c 60-77 > test_utt.txt
+  221  paste test_utt.txt test_wav_dest.txt >wav.scp
+
+  222  cd ../train/
+  224  cat train_trans.txt | awk '{print $2}' |less
+  225  cat train_trans.txt | awk '{print $2}' > trans.txt
+
+  226  cd ../test/
+  227  cat test_trans.txt | awk '{print $2}' |less
+  228  cat test_trans.txt | awk '{print $2}' > trans.txt
+  229  ./copy_test_trans.sh
+
+  230  cd ../train/
+  231  ./copy_trans_files.sh
+  232  ls
+
+  236  cd ../../
+  237  chmod -R 777 *
+  238  cd data/train/
+  239  paste train_utt.txt text_temp > text
+
+  240  cd ../../
+  241  cd wav/train/
+  242  ls */*/*/*.trans |wc
+
+  243  cd ../test/
+  244  ls */*/*/*.trans |wc
+  245  cd ../../data/train/
+  246  ls
+  247  cat text | wc -l
+
+  248  cd ../test/
+  250  paste test_utt.txt text_temp > text
+  251  cat text | wc -l
+
+  252  cd ../train/
+  253  cat train_utt.txt | cut -c 1-13|less
+  255  cat train_utt.txt | cut -c 1-13 > train_spk
+
+  256  cd ../test/
+  257  cat test_utt.txt | cut -c 1-13 > test_spk
+
+  258  cd ../train/
+  259  paste train_utt.txt train_spk | less
+  260  paste train_utt.txt train_spk > utt2spk
+  265  cat utt2spk | wc -l
+  268  ../../utils/utt2spk_to_spk2utt.pl utt2spk > spk2utt
+  269  cat spk2utt| wc -l
+
+
+  261  cd ../test/
+  262  paste test_utt.txt test_spk > utt2spk
+  263  cat utt2spk | wc -l
+  266  ../../utils/utt2spk_to_spk2utt.pl utt2spk > spk2utt
+  271  cat spk2utt| wc -l
+
+  272  cd ../../
+  273  utils/fix_data_dir.sh data/train/
+  274  utils/fix_data_dir.sh data/test/
+  278  chmod -R 777 *
+
+  280  . path.sh
+  284  cat conf/mfcc.config
+  281  compute-mfcc-feats 
+  282  steps/make_mfcc.sh --cmd "run.pl" --nj "10" data/train/ exp_FG/make_mfcc/train mfcc/
+
+  285  copy-feats ark:$base_path/mfcc/raw_mfcc_train.1.ark ark,t:- | head 
+  287  copy-feats ark:$base_path/mfcc/raw_mfcc_train.1.ark ark,t:$base_path/mfcc/raw_mfcc_train.1.txt
+
+  288  steps/compute_cmvn_stats.sh data/train/ exp_FG/make_mfcc/train/ mfcc/
+  289  copy-feats ark:$base_path/mfcc/cmvn_train.ark ark,t:-|less
+  290  copy-feats ark:$base_path/mfcc/cmvn_train.ark ark,t:$base_path/mfcc/cmvn_train.txt
+ 
+  291  utils/validate_data_dir.sh data/train
+
+  293  steps/make_mfcc.sh --cmd "run.pl" --nj "10" data/test/ exp_FG/make_mfcc/test mfcc/
+  294  steps/compute_cmvn_stats.sh data/test/ exp_FG/make_mfcc/test/ mfcc/
+  295  utils/validate_data_dir.sh data/test/
+
+  299  cd data/
+  300  mkdir local
+  301  chmod -R 777 local/
+
+  303  cd local/
+  304  mkdir dict
+  305  chmod -R 777 dict/
+  306  ###########Copy dict file from supporting files given mail or your dictionary files (.text) for database
+	1) fillers 2) lexicon 3) nonsilence_phones 4) optinal_silence 5) silence_phones 
+  312  wc *
+  315  rm -rf *~
+  319  wc *
+  
+  307  cd ../../
+  310  chmod -R 777 *
+  308  . path.sh 
+  309  ./Create_ngram_LM.sh
+
+  323  cd data/lang_bigram/
+  324  ls
+  
+  331  fstprint -isymbols=phones.txt -osymbols=words.txt G.fst| less
+  334  fstprint -isymbols=words.txt -osymbols=words.txt L.fst| less
+  335  clear
+  
+  336  cd ../../
+  338  steps/train_mono.sh --nj "30" --cmd "run.pl" data/train/ data/lang_bigram/ exp_FG/mono
+
+  506  chmod -R 777 *
+
+  495  gmm-copy --binary=false exp_FG/mono/0.mdl exp_FG/mono/0.txt
+  496  gmm-copy --binary=false exp_FG/mono/final.mdl exp_FG/mono/final.txt
+ 
+  497  utils/mkgraph.sh  --mono data/lang_bigram exp_FG/mono exp_FG/mono/graph
+
+  498  steps/decode.sh --nj "10" --cmd "run.pl" exp_FG/mono/graph data/test/ exp_FG/mono/decode
+
+  499  gmm-info exp_FG/mono/final.mdl
+  500  show-transitions data/lang_bigram/phones.txt exp_FG/mono/final.mdl | less
+
+ 
+ #################################   go to exp_FG/momno/decode/  select lat.1.gz right click and extract here
+
+  507  cd exp_FG/mono/decode/
+  508  lattice-to-nbest --acoustic-scale=0.1 --n=5 ark:lat.1 ark,t:-|less
+
+
+####################################W    WORK STATION #########################################################
+  
+  341  mkdir marathi_workstation
+  342  cd marathi_workstation/
+  343  mkdir data wav exp_FG mfcc
+  344  cd ..
+  345  chmod -R 777 *
+  346  cd marathi_workstation/
+  347  chmod -R 777 *
+  348  cd wav
+  349  mkdir train test
+  350  cd ../data/
+  351  mkdir train test
+  352  cd ..
+  353  chmod -R 777 *
+  354  base_path='/home/suraj/kaldi/egs/marathi_workstation'
+  355  cat $base_path/data/train/train_wav.txt | cut -c 72-78|head 
+  356  cat $base_path/data/train/train_wav.txt | cut -c 74-82|head 
+  357  cat $base_path/data/train/train_wav.txt | cut -c 74-82 > $base_path/folder_struct_train
+  358  cat $base_path/data/test/test_wav.txt | cut -c 73-82 | head 
+  359  cat $base_path/data/test/test_wav.txt | cut -c 74-82 | head 
+  360  cat $base_path/data/test/test_wav.txt | cut -c 74-82 >$base_path/folder_struct_test
+  361  chmod -R 777 *
+  362  cd wav/train/
+  363  chmod -R 777 *
+  364  ls
+  365  chmod -R 777 *
+  366  ./create_directory_stucture.sh
+  367  while read line; do echo "$line"; mkdir -p $line; done < $base_path/folder_struct_train
+  368  cd ../test/
+  369  while read line; do echo "$line"; mkdir -p $line; done < $base_path/folder_struct_test
+  370  cd ../../
+  371  chmod -R 777 *
+  372  cd data/train/
+  373  cat train_wav.txt | sed 's/Marathi_Sentence_Dataset_A/train/g' > $base_path/data/train/train_wav_dest.txt
+  374  cd ../test/
+  375  cat test_wav.txt | sed 's/Marathi_Sentence_Dataset_A/test/g' > $base_path/data/test/test_wav_dest.txt
+  376  paste test_wav.txt test_wav_dest.txt > test.txt
+  377  cd ../train/
+  378  paste train_wav.txt train_wav_dest.txt > train.txt
+  379  cat train.txt | sed 's/\.wav/\.trans/g' > train_trans.tx
+  380  cat train.txt | sed 's/\.wav/\.trans/g' > train_trans.txt
+  381  cd ../test/
+  382  cat test.txt | sed 's/\.wav/\.trans/g' > test_trans.txt
+  383  cd ../train/
+  384  while read line1 line2;  do  ../../RemoveEndSilence $line1 temp 44 ;  sox -t raw -b 16 -e signed-integer -r 8000 -c 1 temp $line2;  done < train.txt
+  385  cd ../test/
+  386  while read line1 line2;  do  ../../RemoveEndSilence $line1 temp 44 ;  sox -t raw -b 16 -e signed-integer -r 8000 -c 1 temp $line2 # 16 bit mono 8000 sampling rate;    done < test.txt;  q
+  387  while read line1 line2;  do  ../../RemoveEndSilence $line1 temp 44 ;  sox -t raw -b 16 -e signed-integer -r 8000 -c 1 temp $line2;    done < test.txt;  q
+  388  while read line1 line2;  do  ../../RemoveEndSilence $line1 temp 44 ;  sox -t raw -b 16 -e signed-integer -r 8000 -c 1 temp $line2;    done < test.txt;
+  389  cd ../../
+  390  cd wav/train/
+  391  ls */*/*/*.wav | wc
+  392  cd ../test/
+  393  ls */*/*/*.wav | wc
+  394  cd ../../data/train/
+  395  cat train_wav_dest.txt |cut -d '/' -f12 | cut -d '.' -f1 |head 
+  396  cat train_wav_dest.txt |cut -d '/' -f12 | cut -d '.' -f1 > train_utt.txt
+  397  cd ../test/
+  398  cat test_wav_dest.txt |cut -d '/' -f12 | cut -d '.' -f1 > test_utt.txt
+  399  cd ../train/
+  400  ls
+  401  paste train_utt.txt train_wav_dest.txt >wav.scp
+  402  cd ../test/
+  403  paste test_utt.txt test_wav_dest.txt >wav.scp
+  404  cd ../train/
+  405  cat train_trans.txt | awk '{print $2}' > trans.txt
+  406  cd ../test/
+  407  cat test_trans.txt | awk '{print $2}' > trans.txt
+  408  cd ../train/
+  409  while read line;  do  echo "$line"; cp $line; done < train_trans.txt
+  410  cd ../test/
+  411  while read line;  do  echo "$line"; cp $line; done < test_trans.txt
+  412  cd ../../
+  413  chmod -R 777 *
+  414  cd wav/train/
+  415  ls */*/*/*.trans | wc
+  416  cd ../test/
+  417  ls */*/*/*.trans | wc
+  418  cd ../../data/train/
+  419  paste train_utt.txt text_temp > text
+  420  cd ../../
+  421  chmod -R 777 *
+  422  cd data/train/
+  423  ./copy_train_trans.sh
+  424  cd ../test/
+  425  ./copy_test_trans.sh 
+  426* cat test.txt | sed 's/\.wav/\.trans/g' >
+  427  test_trans.txt | less
+  428  paste test_wav.txt test_wav_dest.txt > test.txt
+  429  cat test.txt | sed 's/\.wav/\.trans/g' > test_trans.txt
+  430  chmod -R 777 *
+  431  cat test_trans.txt | less
+  432  while read line;  do  echo "$line";  cat $line >> text_temp; done < trans.txt
+  433  cat trans.txt |wc
+  434  cd ../train/
+  435  cat trans.txt |wc
+  436  while read line;  do  echo "$line";  cat $line >> text_temp; done < trans.txt
+  437  cd ../test/
+  438  while read line;  do  echo "$line";  cat $line >> text_temp; done < trans.txt
+  439  cd ../train/
+  440  ls */*/*/*.trans | wc
+  441  paste train_utt.txt text_temp > text
+  442  cd ../test/
+  443  paste test_utt.txt text_temp > text
+  444  cd ../../wav/train/
+  445  ls */*/*/*.trans | wc
+  446  ls */*/*/*.wav | wc
+  447  cd ../test/
+  448  ls */*/*/*.wav | wc
+  449  ls */*/*/*.trans | wc
+  450  ../../data/train/
+  451  cd ../../data/train/
+  452  cat train_utt.txt| cut -c 1-13 > train_spk
+  453  cd ../test/
+  454  cat test_utt.txt| cut -c 1-13 |less
+  455  cat test_utt.txt| cut -c 1-13 > test_spk
+  456  cd ../train/
+  457  paste train_utt.txt train_spk > utt2spk
+  458  cd ../test/
+  459  paste test_utt.txt test_spk > utt2spk
+  460  ../../utils/utt2spk_to_spk2utt.pl utt2spk > spk2utt
+  461  cd ../train/
+  462  ../../utils/utt2spk_to_spk2utt.pl utt2spk > spk2utt
+  463  cd ../../
+  464  utils/fix_data_dir.sh data/train/
+  465  utils/fix_data_dir.sh data/test/
+  466  . path.sh 
+  467  compute-mfcc-feats 
+  468  steps/make_mfcc.sh --cmd "run.pl" --nj "10" data/train/ exp_FG/make_mfcc mfcc/
+  469  steps/compute_cmvn_stats.sh data/test/ exp_FG/make_mfcc/test/ mfcc/
+  470  steps/compute_cmvn_stats.sh data/train/ exp_FG/make_mfcc/train/ mfcc/
+  471  steps/compute_cmvn_stats.sh data/test/ exp_FG/make_mfcc/test/ mfcc/
+  472  utils/validate_data_dir.sh data/train
+  473  steps/compute_cmvn_stats.sh data/test/ exp_FG/make_mfcc/test/ mfcc/
+  474  steps/make_mfcc.sh --cmd "run.pl" --nj "10" data/test/ exp_FG/make_mfcc mfcc/
+  475  steps/compute_cmvn_stats.sh data/test/ exp_FG/make_mfcc/test/ mfcc/
+  476  utils/validate_data_dir.sh data/test/
+  477  copy-feats ark:$base_path/mfcc/raw_mfcc_train.1.ark ark,t:-
+  478  copy-feats ark:$base_path/mfcc/raw_mfcc_train.1.ark ark,t:$base_path/mfcc/raw_mfcc_train.1.txt
+  479  cd data/
+  480  mkdir local
+  481  cd local/
+  482  mkdir dict
+  483  cd ..
+  484  chmod -R 777 *
+  485  cd data/local/dict/
+  486  wc *
+  487  cd ../../../
+  488  ./Create_ngram_LM.sh 
+  489  cd data/lang_bigram/
+  490  fstprint -isymbols=words.txt -osymbols=words.txt G.fst |less
+  492  fstprint -isymbols=phones.txt -osymbols=words.txt L.fst |less
+  493  cd ../../
+  494  steps/train_mono.sh --nj "30" --cmd "run.pl" data/train/ data/lang_bigram/ exp_FG/mono
+  495  gmm-copy --binary=false exp_FG/mono/0.mdl exp_FG/mono/0.txt
+  496  gmm-copy --binary=false exp_FG/mono/final.mdl exp_FG/mono/final.txt
+  497  utils/mkgraph.sh  --mono data/lang_bigram exp_FG/mono exp_FG/mono/graph
+  498  steps/decode.sh --nj "10" --cmd "run.pl" exp_FG/mono/graph data/test/ exp_FG/mono/decode
+  499  gmm-info exp_FG/mono/final.mdl
+  500  show-transitions data/lang_bigram/phones.txt exp_FG/mono/final.mdl | less
+  501  cd exp_FG/mono/decode/
+  502  ls
+  503  tar xvfz lat.1.gz 
+  504  cd ../../
+  505  cd ../
+  506  chmod -R 777 *
+  507  cd exp_FG/mono/decode/
+  508  lattice-to-nbest --acoustic-scale=0.1 --n=5 ark:lat.1 ark,t:-|less
+  509  history --help
+  510  history > ../../../history_Kaldi_history25052017
+..................................................................................................
+ head -10 data/train/feats.scp | tail -1 | copy-feats scp:- ark,t:- | head     
+copy-feats ark:mfcc/raw_mfcc_test.1.ark ark,t:an1.txt
+   
+
